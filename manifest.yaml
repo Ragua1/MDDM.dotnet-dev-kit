@@ -1,0 +1,40 @@
+# manifest.yaml
+# Definuje profily pro project-apply.ps1.
+# Každý profil mapuje zdrojové soubory (relativně k templates/project-common/)
+# na cílové cesty v projektu.
+#
+# Formát záznamu:
+#   - source: relativní cesta k šabloně
+#     target: relativní cesta v cílovém projektu
+
+profiles:
+  dotnet-basic:
+    description: "Základní profil pro .NET projekty – editor config, build props, AI instrukce."
+    templateBase: "templates/project-common"
+    files:
+      - source: ".editorconfig"
+        target: ".editorconfig"
+
+      - source: "Directory.Build.props"
+        target: "Directory.Build.props"
+
+      - source: "Directory.Packages.props"
+        target: "Directory.Packages.props"
+
+      - source: "global.json"
+        target: "global.json"
+
+      - source: "AGENTS.md.template"
+        target: "AGENTS.md"
+
+      - source: "copilot-instructions.md.template"
+        target: ".github/copilot-instructions.md"
+
+      - source: "instructions/dotnet.instructions.md.template"
+        target: ".github/instructions/dotnet.instructions.md"
+
+      - source: "instructions/tests.instructions.md.template"
+        target: ".github/instructions/tests.instructions.md"
+
+      - source: "instructions/efcore.instructions.md.template"
+        target: ".github/instructions/efcore.instructions.md"
