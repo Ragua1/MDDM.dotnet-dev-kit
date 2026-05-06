@@ -1,0 +1,133 @@
+name: Validate repository
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate repository contents
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $scriptFiles = Get-ChildItem -Path "scripts" -Filter "*.ps1" -Recurse -File
+          if ($scriptFiles.Count -eq 0) {
+              throw "No PowerShell scripts found under scripts/."
+          }
+
+          foreach ($scriptFile in $scriptFiles) {
+              $tokens = $null
+              $parseErrors = $null
+
+              [System.Management.Automation.Language.Parser]::ParseFile(
+                  $scriptFile.FullName,
+                  [ref]$tokens,
+                  [ref]$parseErrors
+              ) | Out-Null
+
+              if ($parseErrors.Count -gt 0) {
+                  $messages = $parseErrors | ForEach-Object {
+                      "$($_.Message) [$($_.Extent.StartLineNumber):$($_.Extent.StartColumnNumber)]"
+                  }
+
+                  throw "PowerShell syntax validation failed for '$($scriptFile.FullName)':`n$($messages -join "`n")"
+              }
+          }
+
+          $requiredFiles = @(
+              "README.md"
+              "manifest.yaml"
+              "scripts/bootstrap.ps1"
+              "scripts/project-apply.ps1"
+              "scripts/project-new.ps1"
+              "scripts/generate-ai-instructions.ps1"
+              "templates/project-common/.editorconfig"
+              "templates/project-common/Directory.Build.props"
+              "templates/project-common/Directory.Packages.props"
+              "templates/project-common/global.json"
+              "templates/project-common/AGENTS.md.template"
+              "templates/project-common/copilot-instructions.md.template"
+              "templates/project-common/instructions/dotnet.instructions.md.template"
+              "templates/project-common/instructions/tests.instructions.md.template"
+              "templates/project-common/instructions/efcore.instructions.md.template"
+              "ai/instructions/base.md"
+              "ai/instructions/dotnet.md"
+              "ai/instructions/testing.md"
+              "ai/instructions/efcore.md"
+              "ai/skills/dotnet-project-initializer/SKILL.md"
+              "ai/skills/dotnet-code-review/SKILL.md"
+              "ai/skills/test-strategy-generator/SKILL.md"
+          )
+
+          foreach ($requiredFile in $requiredFiles) {
+              if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
+                  throw "Required file is missing: $requiredFile"
+              }
+          }
+
+          $manifestInfo = Get-Item -LiteralPath "manifest.yaml"
+          if ($manifestInfo.Length -le 0) {
+              throw "manifest.yaml exists but is empty."
+          }
+
+          $skillFiles = Get-ChildItem -Path "ai/skills" -Filter "SKILL.md" -Recurse -File
+          if ($skillFiles.Count -eq 0) {
+              throw "No SKILL.md files found under ai/skills/."
+          }
+
+          foreach ($skillFile in $skillFiles) {
+              $content = Get-Content -LiteralPath $skillFile.FullName -Raw
+
+              if ([string]::IsNullOrWhiteSpace($content)) {
+                  throw "Skill file is empty: $($skillFile.FullName)"
+              }
+
+              if (-not $content.StartsWith("---")) {
+                  throw "Skill file must start with YAML frontmatter '---': $($skillFile.FullName)"
+              }
+
+              if ($content -notmatch '(?m)^name:\s*\S+') {
+                  throw "Skill file is missing 'name:' in frontmatter: $($skillFile.FullName)"
+              }
+
+              if ($content -notmatch '(?m)^description:\s*\S+') {
+                  throw "Skill file is missing 'description:' in frontmatter: $($skillFile.FullName)"
+              }
+          }
+
+          $instructionTemplates = Get-ChildItem -Path "templates/project-common/instructions" -Filter "*.instructions.md.template" -File
+          if ($instructionTemplates.Count -eq 0) {
+              throw "No instruction templates found under templates/project-common/instructions/."
+          }
+
+          foreach ($instructionTemplate in $instructionTemplates) {
+              $content = Get-Content -LiteralPath $instructionTemplate.FullName -Raw
+
+              if ([string]::IsNullOrWhiteSpace($content)) {
+                  throw "Instruction template is empty: $($instructionTemplate.FullName)"
+              }
+
+              if ($content -notmatch '(?m)^---\s*$') {
+                  throw "Instruction template is missing YAML frontmatter delimiter '---': $($instructionTemplate.FullName)"
+              }
+
+              if ($content -notmatch '(?m)^applyTo:\s*\S+') {
+                  throw "Instruction template is missing 'applyTo:': $($instructionTemplate.FullName)"
+              }
+          }
+
+          Write-Host "Repository validation passed."

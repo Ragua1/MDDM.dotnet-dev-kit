@@ -1,0 +1,78 @@
+name: Test scripts
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-scripts:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show .NET info
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          dotnet --info
+
+      - name: Create temporary project
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Path temp/TestProject -Force | Out-Null
+          Push-Location temp/TestProject
+          dotnet new sln --name TestProject --format sln
+          dotnet new classlib --name TestProject.Core
+          dotnet sln add TestProject.Core/TestProject.Core.csproj
+          Pop-Location
+
+      - name: Run project apply in check mode
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          ./scripts/project-apply.ps1 -ProjectPath ./temp/TestProject -Profile dotnet-basic -Mode Check
+
+      - name: Run project apply in apply mode
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          ./scripts/project-apply.ps1 -ProjectPath ./temp/TestProject -Profile dotnet-basic -Mode Apply
+
+      - name: Verify generated files
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $requiredFiles = @(
+              "temp/TestProject/.editorconfig"
+              "temp/TestProject/Directory.Build.props"
+              "temp/TestProject/Directory.Packages.props"
+              "temp/TestProject/global.json"
+              "temp/TestProject/AGENTS.md"
+              "temp/TestProject/.github/copilot-instructions.md"
+              "temp/TestProject/.github/instructions/dotnet.instructions.md"
+              "temp/TestProject/.github/instructions/tests.instructions.md"
+              "temp/TestProject/.github/instructions/efcore.instructions.md"
+          )
+
+          foreach ($requiredFile in $requiredFiles) {
+              if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
+                  throw "Expected generated file is missing: $requiredFile"
+              }
+          }
+
+      - name: Build temporary solution
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          dotnet build ./temp/TestProject/TestProject.sln
