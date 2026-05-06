@@ -1,0 +1,12 @@
+{
+  "sdk": {
+    "version": "9.0.0",
+    "rollForward": "latestMinor"
+  },
+  "$comment": [
+    "TODO: Uprav 'version' na verzi .NET SDK nainstalovanou na tvém zařízení.",
+    "Zjistíš ji příkazem: dotnet --version",
+    "rollForward: latestMinor = použije nejnovější patch/minor v rámci zadané major verze.",
+    "Více info: https://learn.microsoft.com/en-us/dotnet/core/tools/global-json"
+  ]
+}
