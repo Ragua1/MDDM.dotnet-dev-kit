@@ -1,0 +1,55 @@
+<Project>
+  <!--
+    Directory.Build.props – sdílené MSBuild vlastnosti pro všechny projekty v solution.
+    Umísti tento soubor do kořene solution (vedle .sln souboru).
+
+    Více info: https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory
+    TODO: Uprav hodnoty dle potřeb projektu.
+  -->
+
+  <PropertyGroup Label="Language">
+    <!-- Verze jazyka – latestMajor odpovídá nejnovější stabilní hlavní verzi C# -->
+    <!-- TODO: změň na konkrétní verzi (např. 12), pokud chceš pevnou verzi -->
+    <LangVersion>latestMajor</LangVersion>
+
+    <!-- Nullable reference types – doporučeno zapnout pro nové projekty -->
+    <Nullable>enable</Nullable>
+
+    <!-- Implicitní globální usingy (.NET 6+) -->
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Build">
+    <!-- Deterministické sestavení – reprodukovatelné binárky -->
+    <Deterministic>true</Deterministic>
+
+    <!-- Úroveň analýzy kódu – latest doporučuje nejnovější pravidla -->
+    <AnalysisLevel>latest</AnalysisLevel>
+
+    <!--
+      TreatWarningsAsErrors – vypnuto jako bezpečný MVP default.
+      TODO: zvažte zapnutí pro produkční projekty po vyčištění varování.
+    -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <!-- Warningy pro běžné problémy -->
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Output">
+    <!-- Doporučené výchozí výstupní cesty -->
+    <BaseOutputPath>$(MSBuildThisFileDirectory)artifacts\bin\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)artifacts\obj\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <!--
+    Testovací projekty – vypnout TreatWarningsAsErrors a AnalysisLevel pro test projekty,
+    pokud je to potřeba. Odkomentuj dle potřeby.
+  -->
+  <!--
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  -->
+
+</Project>

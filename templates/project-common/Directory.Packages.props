@@ -1,0 +1,52 @@
+<Project>
+  <!--
+    Directory.Packages.props – Central Package Management pro celou solution.
+    Umísti tento soubor do kořene solution (vedle .sln souboru).
+
+    Centrální správa verzí NuGet balíčků zabraňuje nekonzistencím mezi projekty.
+    V jednotlivých .csproj souborech používej <PackageReference Include="..." /> BEZ verze.
+
+    Více info: https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management
+    TODO: Uprav verze balíčků dle aktuálně dostupných stable verzí.
+  -->
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+
+    <!--
+      CentralPackageTransitivePinningEnabled – pokud chceš pinovat i tranzitivní závislosti.
+      Výchozí: false. Zapni, pokud narazíš na problémy s nekonzistentními verzemi.
+    -->
+    <!-- <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled> -->
+  </PropertyGroup>
+
+  <ItemGroup Label="Microsoft.Extensions">
+    <!-- TODO: Zkontroluj a aktualizuj verze při vytvoření nového projektu -->
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options"              Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection"  Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration"        Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http"                 Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing">
+    <!-- TODO: Zkontroluj a aktualizuj verze -->
+    <PackageVersion Include="xunit"                         Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio"    Version="2.8.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk"        Version="17.12.0" />
+    <PackageVersion Include="FluentAssertions"              Version="7.0.0" />
+    <PackageVersion Include="NSubstitute"                   Version="5.3.0" />
+    <PackageVersion Include="coverlet.collector"            Version="6.0.4" />
+  </ItemGroup>
+
+  <!--
+  <ItemGroup Label="EF Core">
+    TODO: Odkomentuj a uprav verze, pokud projekt používá EF Core
+    <PackageVersion Include="Microsoft.EntityFrameworkCore"              Version="9.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer"   Version="9.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design"      Version="9.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools"       Version="9.0.0" />
+  </ItemGroup>
+  -->
+
+</Project>
